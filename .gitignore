@@ -1,0 +1,60 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Cextensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyTest / Unit Tests
+.pytest_cache/
+.tox/
+.coverage
+.cache
+htmlcov/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Streamlit specific
+.streamlit/
+*.mp4
+*.png
+*.jpg
+*.jpeg
+
+# Local model weights
+*.pt
+*.pth
+*.bin
+
+# Local IDEs
+.vscode/
+.idea/
+.project
+.pydevproject
+.agents/
+.gemini/

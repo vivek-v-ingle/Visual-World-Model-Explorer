@@ -1,0 +1,13 @@
+streamlit>=1.30.0
+plotly>=5.15.0
+torch>=2.0.0
+torchvision>=0.15.0
+numpy>=1.22.0
+opencv-python-headless>=4.7.0
+pandas>=1.5.0
+matplotlib>=3.7.0
+einops>=0.6.0
+pyyaml>=6.0
+scipy>=1.10.0
+ikpy>=3.3.3
+

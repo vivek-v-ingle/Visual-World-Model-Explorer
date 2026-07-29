@@ -1,0 +1,29 @@
+[project]
+name = "visual-world-model-explorer"
+version = "1.0.0"
+description = "An interactive educational platform and debugger for Robotics World Models"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence"
+]
+dependencies = [
+    "streamlit>=1.30.0",
+    "plotly>=5.15.0",
+    "torch>=2.0.0",
+    "torchvision>=0.15.0",
+    "numpy>=1.22.0",
+    "opencv-python-headless>=4.7.0",
+    "pandas>=1.5.0",
+    "matplotlib>=3.7.0",
+    "einops>=0.6.0",
+    "ikpy>=3.3.3"
+]
+
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
