@@ -52,10 +52,11 @@ def get_manager() -> VisualExplorerManager:
         from backends.osvi.osvi_backend import OSVIWorldModelBackend
         manager.register_backend("OSVI-WM", OSVIWorldModelBackend())
         
-        # We can add mock/future backends for comparison
-        from backends.osvi.osvi_backend import MockFastWAMBackend, MockDemoJepaBackend
+        # We can add backends
+        from backends.osvi.osvi_backend import MockFastWAMBackend
+        from backends.jepa.jepa_backend import DemoJEPABackend
         manager.register_backend("FastWAM (Mock)", MockFastWAMBackend())
-        manager.register_backend("Demo-JEPA (Mock)", MockDemoJepaBackend())
+        manager.register_backend("Demo-JEPA", DemoJEPABackend())
         
         st.session_state["manager"] = manager
         

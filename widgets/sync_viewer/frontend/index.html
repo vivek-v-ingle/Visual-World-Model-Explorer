@@ -30,6 +30,7 @@
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { STLLoader } from 'three/addons/loaders/STLLoader.js';
         import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';
+        import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 
         // Decode a data URI to ArrayBuffer (for binary formats like STL)
         function dataUriToArrayBuffer(dataUri) {
@@ -63,6 +64,7 @@
                 const linkMeshes = {};
                 const stlLoader = new STLLoader();
                 const daeLoader = new ColladaLoader();
+                const objLoader = new OBJLoader();
 
                 // Load all links
                 doc.querySelectorAll('link').forEach(linkEl => {
@@ -98,6 +100,7 @@
                         }
 
                         const onMeshLoaded = (geom) => {
+                            geom.computeVertexNormals();
                             const mat = new THREE.MeshPhongMaterial({ color, side: THREE.DoubleSide });
                             const mesh = new THREE.Mesh(geom, mat);
                             mesh.position.set(xyz[0], xyz[1], xyz[2]);
@@ -109,6 +112,7 @@
                         const isDataUri = filename.startsWith('data:');
                         const isStl = filename.includes('.stl') || filename.includes('.STL') || filename.startsWith('data:model/stl');
                         const isDae = filename.includes('.dae') || filename.includes('.DAE') || filename.startsWith('data:model/vnd.collada');
+                        const isObj = filename.includes('.obj') || filename.includes('.OBJ') || filename.startsWith('data:text/plain') || filename.startsWith('data:application/octet-stream');
 
                         if (isStl) {
                             if (isDataUri) {
@@ -128,6 +132,29 @@
                             } else {
                                 daeLoader.load(filename, result => {
                                     result.scene.traverse(c => { if (c.isMesh) onMeshLoaded(c.geometry.clone()); });
+                                });
+                            }
+                        } else if (isObj) {
+                            if (isDataUri) {
+                                const text = atob(filename.split(',')[1] || '');
+                                try {
+                                    const result = objLoader.parse(text);
+                                    console.log("[DEBUG] Parsed OBJ for:", name, "children:", result.children.length);
+                                    let foundMesh = false;
+                                    result.traverse(c => {
+                                        if (c.isMesh) {
+                                            console.log("[DEBUG] Found mesh in OBJ:", c.name, "geometry vertices:", c.geometry.attributes.position ? c.geometry.attributes.position.count : 0);
+                                            onMeshLoaded(c.geometry.clone());
+                                            foundMesh = true;
+                                        }
+                                    });
+                                    if (!foundMesh) {
+                                        console.warn("[DEBUG] No meshes found in parsed OBJ for link:", name);
+                                    }
+                                } catch(e) { console.error('[DEBUG] OBJ parse error for link:', name, e); }
+                            } else {
+                                objLoader.load(filename, result => {
+                                    result.traverse(c => { if (c.isMesh) onMeshLoaded(c.geometry.clone()); });
                                 });
                             }
                         }
@@ -372,23 +399,25 @@
                     <video ref="videoPlayer" controls :src="videoSrc" @timeupdate="onTimeUpdate"
                         @loadedmetadata="onVideoLoaded"></video>
                 </div>
-                <div class="col-viewer">
-
-                    <!-- Always in DOM so Plotly can target them; shown/hidden via display -->
-                    <!-- MODE: ROBOT (Three.js fallback) -->
-                    <div id="robot-fallback-chart"
-                        :style="{ display: (!isRobotBundleAvailable && !isDmpMode && viewerData) ? 'block' : 'none', width: '100%', height: '100%' }">
+                <!-- Center Column: 3D Path Plotly Viewer -->
+                <div class="col-viewer" id="dmp-chart"
+                    :style="{ display: ((isDmpMode || isRobotMode) && viewerData) ? 'block' : 'none', position: 'relative' }">
+                    <!-- HUD State Monitor Overlay -->
+                    <div style="position: absolute; top: 12px; right: 12px; background: rgba(18, 18, 18, 0.85); padding: 8px 12px; border-radius: 6px; font-family: monospace; font-size: 11px; z-index: 100; border: 1px solid rgba(255,255,255,0.15); color: #00FFCC; box-shadow: 0 4px 10px rgba(0,0,0,0.5);" v-if="viewerData">
+                       <div style="font-weight: bold; margin-bottom: 2px; color: #FFF; font-size: 10px; letter-spacing: 0.5px;">📟 STATE MONITOR</div>
+                       <div>⚡ Active Frame: {{ currentFrame + 1 }} / {{ totalFrames }}</div>
+                       <div>📍 Active Target: {{ currentWaypoint }}</div>
                     </div>
+                </div>
 
-                    <!-- MODE: DMP (Plotly) -->
-                    <div id="dmp-chart"
-                        :style="{ display: (isDmpMode && viewerData) ? 'block' : 'none', width: '100%', height: '100%' }">
-                    </div>
+                <!-- Right Column: Three.js Robot Arm Viewer -->
+                <div class="col-viewer" id="robot-fallback-chart"
+                    :style="{ display: (isRobotMode && !isRobotBundleAvailable && viewerData) ? 'block' : 'none' }">
+                </div>
 
-                    <div v-if="!viewerData"
-                        style="display:flex; justify-content:center; align-items:center; height:100%; color:#aaa;">
-                        Waiting for Data...
-                    </div>
+                <div v-if="!viewerData"
+                    style="display:flex; justify-content:center; align-items:center; height:100%; color:#aaa; grid-column: span 2;">
+                    Waiting for Data...
                 </div>
             </div>
         </v-app>
@@ -396,6 +425,82 @@
 
     <!-- Minimal Streamlit Client -->
     <script>
+        // Console interceptor for debugging in user screenshots
+        window.addEventListener("DOMContentLoaded", () => {
+            const consoleLogDiv = document.createElement('div');
+            consoleLogDiv.id = 'debug-log-console';
+            consoleLogDiv.style.position = 'absolute';
+            consoleLogDiv.style.bottom = '12px';
+            consoleLogDiv.style.left = '12px';
+            consoleLogDiv.style.width = '360px';
+            consoleLogDiv.style.maxHeight = '150px';
+            consoleLogDiv.style.overflowY = 'auto';
+            consoleLogDiv.style.background = 'rgba(0,0,0,0.85)';
+            consoleLogDiv.style.color = '#00FFCC';
+            consoleLogDiv.style.fontFamily = 'monospace';
+            consoleLogDiv.style.fontSize = '9px';
+            consoleLogDiv.style.zIndex = '10000';
+            consoleLogDiv.style.padding = '8px';
+            consoleLogDiv.style.borderRadius = '4px';
+            consoleLogDiv.style.border = '1px solid rgba(255,255,255,0.15)';
+            consoleLogDiv.style.pointerEvents = 'none';
+            
+            window.browserLogs = [];
+            
+            const consoleTitle = document.createElement('div');
+            consoleTitle.style.fontWeight = 'bold';
+            consoleTitle.style.color = '#FFF';
+            consoleTitle.style.marginBottom = '4px';
+            consoleTitle.innerText = '📟 CONSOLE LOGS:';
+            consoleLogDiv.appendChild(consoleTitle);
+
+            const sendBtn = document.createElement('button');
+            sendBtn.innerText = '📤 Send to Python';
+            sendBtn.style.background = '#6366f1';
+            sendBtn.style.color = '#fff';
+            sendBtn.style.border = 'none';
+            sendBtn.style.borderRadius = '3px';
+            sendBtn.style.padding = '2px 6px';
+            sendBtn.style.marginLeft = '10px';
+            sendBtn.style.cursor = 'pointer';
+            sendBtn.style.fontSize = '8px';
+            sendBtn.style.pointerEvents = 'auto';
+            sendBtn.onclick = () => {
+                Streamlit.setComponentValue(JSON.stringify(window.browserLogs || []));
+            };
+            consoleTitle.appendChild(sendBtn);
+            
+            const logLines = document.createElement('div');
+            logLines.id = 'debug-log-lines';
+            consoleLogDiv.appendChild(logLines);
+            document.body.appendChild(consoleLogDiv);
+            
+            window.addLog = function(msg, color = '#00FFCC') {
+                window.browserLogs.push(msg);
+                const div = document.createElement('div');
+                div.style.color = color;
+                div.innerText = msg;
+                logLines.appendChild(div);
+                logLines.scrollTop = logLines.scrollHeight;
+            };
+        });
+        
+        const _log = console.log;
+        console.log = function(...args) {
+            _log.apply(console, args);
+            if (window.addLog) window.addLog(args.join(' '), '#00FFCC');
+        };
+        const _warn = console.warn;
+        console.warn = function(...args) {
+            _warn.apply(console, args);
+            if (window.addLog) window.addLog(args.join(' '), 'yellow');
+        };
+        const _error = console.error;
+        console.error = function(...args) {
+            _error.apply(console, args);
+            if (window.addLog) window.addLog(args.join(' '), '#FF3366');
+        };
+
         const Streamlit = {
             setComponentReady: function () {
                 window.parent.postMessage({ isStreamlitMessage: true, type: "streamlit:componentReady", apiVersion: 1 }, "*");
@@ -425,28 +530,44 @@
                 lastSeekTime: 0,
                 videoDuration: 0,
                 isRobotBundleAvailable: false,
+                currentFrame: 0,
+                totalFrames: 0,
+                currentWaypoint: 'N/A'
             },
             computed: {
-                layoutStyle() {
-                    return {
-                        'grid-template-columns': this.videoSrc ? '1fr 1fr' : '1fr'
-                    };
-                },
                 isDmpMode() {
                     return this.viewerData && this.viewerData.mode === 'dmp';
+                },
+                isRobotMode() {
+                    return this.viewerData && this.viewerData.mode === 'robot';
+                },
+                layoutStyle() {
+                    if (this.videoSrc) {
+                        return {
+                            'grid-template-columns': this.isRobotMode ? '1fr 1.1fr 1.1fr' : '1fr 1.2fr'
+                        };
+                    }
+                    return {
+                        'grid-template-columns': '1fr'
+                    };
                 }
             },
             watch: {
                 viewerData: {
                     handler(val) {
-                        if (val && val.mode === 'dmp') {
-                            this.$nextTick(() => {
-                                this.initPlotly();
-                            });
-                        } else if (val && !this.isRobotBundleAvailable) {
-                            this.$nextTick(() => {
-                                this.initRobotFallback();
-                            });
+                        if (val) {
+                            if (val.mode === 'dmp') {
+                                this.$nextTick(() => {
+                                    this.initPlotly();
+                                });
+                            } else if (val.mode === 'robot') {
+                                this.$nextTick(() => {
+                                    this.initPlotly();
+                                    if (!this.isRobotBundleAvailable) {
+                                        this.initRobotFallback();
+                                    }
+                                });
+                            }
                         }
                     },
                     deep: true
@@ -459,13 +580,11 @@
                 onTimeUpdate(e) {
                     const t = e.target.currentTime;
 
-                    // ROBOT SYNC
-                    if (!this.isDmpMode) {
-                        this.updateRobotFallbackMarker(t);
-                    }
-                    // DMP SYNC
-                    else {
+                    if (this.isDmpMode) {
                         this.updatePlotlyMarker(t);
+                    } else if (this.isRobotMode) {
+                        this.updatePlotlyMarker(t);
+                        this.updateRobotFallbackMarker(t);
                     }
                 },
 
@@ -488,6 +607,22 @@
                 },
 
                 updateRobotFallbackMarker(time) {
+                    if (this.viewerData && this.viewerData.models && this.viewerData.models.length > 0) {
+                        const model = this.viewerData.models[0];
+                        const traj = model.trajectory || [];
+                        let idx = 0;
+                        let minDiff = Infinity;
+                        for (let i = 0; i < traj.length; i++) {
+                            const t = (traj[i].time !== undefined) ? traj[i].time : (i * 0.1);
+                            const diff = Math.abs(t - time);
+                            if (diff < minDiff) { minDiff = diff; idx = i; }
+                        }
+                        this.currentFrame = idx;
+                        this.totalFrames = traj.length;
+                        if (traj[idx]) {
+                            this.currentWaypoint = "Joint 1: " + (traj[idx].q.panda_joint1 || 0).toFixed(2) + " rad";
+                        }
+                    }
                     if (window.RobotViewer) window.RobotViewer.seekToTime(time);
                 },
 
@@ -628,6 +763,11 @@
                         if (diff < minDiff) { minDiff = diff; idx = i; }
                     }
 
+                    // Update HUD overlay state
+                    this.currentFrame = idx;
+                    this.totalFrames = traj.t.length;
+                    this.currentWaypoint = `WP ${idx + 1} (${traj.x[idx].toFixed(2)}, ${traj.y[idx].toFixed(2)}, ${traj.z[idx].toFixed(2)})`;
+
                     // Update "Current Time" marker trace using dynamic index
                     const traceIdx = this._dmpCurrentTimeTraceIdx || 2;
                     Plotly.restyle('dmp-chart', {
@@ -635,6 +775,30 @@
                         y: [[traj.y[idx]]],
                         z: [[traj.z[idx]]]
                     }, [traceIdx]);
+
+                    // PROGRESSIVE ANIMATION: Draw the line path matching the current timeline playhead index
+                    if (traj.segments && traj.segments.length > 0) {
+                        traj.segments.forEach((seg, sIdx) => {
+                            let sx, sy, sz;
+                            if (seg.endIdx <= idx) {
+                                sx = traj.x.slice(seg.startIdx, seg.endIdx + 1);
+                                sy = traj.y.slice(seg.startIdx, seg.endIdx + 1);
+                                sz = traj.z.slice(seg.startIdx, seg.endIdx + 1);
+                            } else if (seg.startIdx <= idx) {
+                                sx = traj.x.slice(seg.startIdx, idx + 1);
+                                sy = traj.y.slice(seg.startIdx, idx + 1);
+                                sz = traj.z.slice(seg.startIdx, idx + 1);
+                            } else {
+                                sx = []; sy = []; sz = [];
+                            }
+                            Plotly.restyle('dmp-chart', { x: [sx], y: [sy], z: [sz] }, [sIdx]);
+                        });
+                    } else {
+                        const sx = traj.x.slice(0, idx + 1);
+                        const sy = traj.y.slice(0, idx + 1);
+                        const sz = traj.z.slice(0, idx + 1);
+                        Plotly.restyle('dmp-chart', { x: [sx], y: [sy], z: [sz] }, [0]);
+                    }
                 }
             },
             mounted() {
@@ -646,8 +810,11 @@
                     if (this.viewerData) {
                         if (this.isDmpMode) {
                             this.initPlotly();
-                        } else if (!this.isRobotBundleAvailable) {
-                            this.initRobotFallback();
+                        } else if (this.isRobotMode) {
+                            this.initPlotly();
+                            if (!this.isRobotBundleAvailable) {
+                                this.initRobotFallback();
+                            }
                         }
                     }
 

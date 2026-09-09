@@ -26,6 +26,7 @@ def preprocess_image_tensor(tensor_img):
         img = img * std + mean
         
     img = np.clip(img * 255.0, 0, 255).astype(np.uint8)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     return img
 
 def render_feature_heatmap(img, feat_map, channel_idx, alpha=0.6):
@@ -216,7 +217,7 @@ def plot_final_predictions_3d(pred_world_waypoints, gt_trajectory=None, camera_p
     )
     return fig
 
-def render_2d_trajectory_overlay(base_img, waypoints_raw):
+def render_2d_trajectory_overlay(base_img, waypoints_raw, crop_offset=0):
     """
     Project waypoints on the 2D image coordinates and draw them.
     Ensures correct raw pixel calculations mapping [-1, 1] to width/height.
@@ -229,7 +230,7 @@ def render_2d_trajectory_overlay(base_img, waypoints_raw):
     for i in range(len(waypoints_raw)):
         u_norm, v_norm = waypoints_raw[i, 0], waypoints_raw[i, 1]
         x_px = int(((u_norm + 1.0) / 2.0) * W)
-        y_px = int(((v_norm + 1.0) / 2.0) * H)
+        y_px = int(((v_norm + 1.0) / 2.0) * (H - crop_offset)) + crop_offset
         pts.append((x_px, y_px))
         
     for i in range(len(pts) - 1):

@@ -36,7 +36,7 @@ else:
         is_metaworld = "metaworld" in sel_ckpt.lower()
         
         # Upload
-        uploaded_file = st.file_uploader("Or Upload Custom Trajectory (.pkl)", type=["pkl"])
+        uploaded_file = st.file_uploader("Or Upload Custom Episode/Trajectory (.h5, .pkl)", type=["h5", "hdf5", "pkl"])
         if uploaded_file is not None:
             scratch_dir = "/home/vvijaykumar/.gemini/antigravity-ide/brain/25458c0f-e26c-44f2-9682-23adefaf5468/scratch"
             os.makedirs(scratch_dir, exist_ok=True)

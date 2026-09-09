@@ -91,11 +91,33 @@ class FrankaPandaAdapter(BaseRobotAdapter):
         if not os.path.exists(self.urdf_path):
             raise FileNotFoundError(f"Panda URDF not found at {self.urdf_path}")
             
-        with open(self.urdf_path, "r") as f:
-            urdf_xml = f.read()
-            
-        # We base64 encode the URDF XML so the WebGL frontend index.html custom loader can parse it
-        urdf_b64 = base64.b64encode(urdf_xml.encode("utf-8")).decode("utf-8")
+        tree = ET.parse(self.urdf_path)
+        root = tree.getroot()
+        base_dir = os.path.dirname(self.urdf_path)
+        
+        for mesh in root.iter('mesh'):
+            filename = mesh.get('filename')
+            if filename:
+                rel_path = filename.replace('package://', '')
+                mesh_path = os.path.abspath(os.path.join(base_dir, rel_path))
+                
+                if os.path.exists(mesh_path):
+                    with open(mesh_path, "rb") as mf:
+                        mesh_bytes = mf.read()
+                    b64_mesh = base64.b64encode(mesh_bytes).decode("utf-8")
+                    
+                    mime = "application/octet-stream"
+                    if filename.lower().endswith(".obj"):
+                        mime = "text/plain"
+                    elif filename.lower().endswith(".stl"):
+                        mime = "model/stl"
+                    elif filename.lower().endswith(".dae"):
+                        mime = "model/vnd.collada"
+                        
+                    mesh.set('filename', f"data:{mime};base64,{b64_mesh}")
+                    
+        hydrated_xml = ET.tostring(root, encoding='unicode')
+        urdf_b64 = base64.b64encode(hydrated_xml.encode("utf-8")).decode("utf-8")
         return f"data:text/xml;base64,{urdf_b64}"
 
     def cartesian_to_joint_trajectory(self, cartesian_wps: np.ndarray, grasp_scores: np.ndarray) -> List[Dict[str, Any]]:

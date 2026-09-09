@@ -32,7 +32,11 @@ else:
             st.metric("Attention Tensor Shape", str(list(attn_val.shape)))
             
             num_heads = attn_val.shape[1] if len(attn_val.shape) > 1 else 1
-            selected_head = st.slider("Select Head Index", 0, num_heads - 1, 0)
+            if num_heads > 1:
+                selected_head = st.slider("Select Head Index", 0, num_heads - 1, 0)
+            else:
+                selected_head = 0
+                st.info("Single-head attention map selected.")
             
         with col_r:
             attn_np = attn_val[0, selected_head].cpu().numpy() if len(attn_val.shape) > 2 else attn_val.cpu().numpy()
