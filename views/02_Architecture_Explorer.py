@@ -2,11 +2,11 @@ import streamlit as st
 import sys
 import os
 
-# Adjust path to import files
-sys.path.insert(0, '/home/vvijaykumar/Visual-World-Model-Explorer')
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 from core.manager import get_manager
 
-st.set_page_config(page_title="Architecture Explorer - World Model Explorer", layout="wide")
 
 manager = get_manager()
 active_model = manager.active_backend_name

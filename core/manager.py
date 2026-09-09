@@ -76,15 +76,15 @@ def init_shared_state():
         st.session_state["selected_trajectory_file"] = None
 
 DEBUGGER_PAGES = [
-    ("Input Module", "pages/03_Input_Explorer.py"),
-    ("Shared ResNet Encoder", "pages/04_Encoder_Explorer.py"),
-    ("Latent Space Explorer", "pages/05_Latent_Space_Explorer.py"),
-    ("Action Model", "pages/06_Action_Model_Explorer.py"),
-    ("Forward Model", "pages/07_Forward_Model_Explorer.py"),
-    ("Spatial Embedding", "pages/09_Spatial_Embedding.py"),
-    ("Temporal Pooling", "pages/11_Temporal_Pooling.py"),
-    ("Waypoint Decoder", "pages/12_Waypoint_Decoder.py"),
-    ("Final Predictions", "pages/13_Trajectory_Explorer.py")
+    ("Input Module", "views/03_Input_Explorer.py"),
+    ("Shared ResNet Encoder", "views/04_Encoder_Explorer.py"),
+    ("Latent Space Explorer", "views/05_Latent_Space_Explorer.py"),
+    ("Action Model", "views/06_Action_Model_Explorer.py"),
+    ("Forward Model", "views/07_Forward_Model_Explorer.py"),
+    ("Spatial Embedding", "views/09_Spatial_Embedding.py"),
+    ("Temporal Pooling", "views/11_Temporal_Pooling.py"),
+    ("Waypoint Decoder", "views/12_Waypoint_Decoder.py"),
+    ("Final Predictions", "views/13_Trajectory_Explorer.py")
 ]
 
 def render_debugger_navigation(current_page_name: str):

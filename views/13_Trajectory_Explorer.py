@@ -9,8 +9,12 @@ import subprocess
 import base64
 
 # Adjust path to import files
-sys.path.insert(0, '/home/vvijaykumar/Visual-World-Model-Explorer')
-sys.path.insert(0, '/home/vvijaykumar/osvi-wm')
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+_osvi = os.path.expanduser("~/osvi-wm")
+if os.path.exists(_osvi) and _osvi not in sys.path:
+    sys.path.insert(0, _osvi)
 from core.manager import render_debugger_navigation
 from visualizers.plots import plot_final_predictions_3d, render_2d_trajectory_overlay
 from utils.projection_utils import image_coords_to_3d
@@ -19,7 +23,6 @@ from dataset.agent_dataset import traj_to_base_matrix
 # Import sync_viewer widget
 from widgets.sync_viewer import sync_viewer
 
-st.set_page_config(page_title="Trajectory Explorer - World Model Explorer", layout="wide")
 
 st.markdown("## 🏁 Stage 9: Trajectory Explorer")
 st.write("Visualizes the final trajectory overlayed in 3D robot workspace coordinates, fully synchronized with the expert demonstration video.")
@@ -154,4 +157,4 @@ else:
             st.image(overlay_img, caption="Predicted Coordinates Overlaid on Observation", use_container_width=True)
 
 # Render debug timeline
-render_debugger_navigation("pages/13_Trajectory_Explorer.py")
+render_debugger_navigation("views/13_Trajectory_Explorer.py")

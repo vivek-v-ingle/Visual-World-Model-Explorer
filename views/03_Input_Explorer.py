@@ -3,11 +3,12 @@ import sys
 import os
 
 # Adjust path to import files
-sys.path.insert(0, '/home/vvijaykumar/Visual-World-Model-Explorer')
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 from core.manager import get_manager, render_debugger_navigation
 from visualizers.plots import preprocess_image_tensor
 
-st.set_page_config(page_title="Input Explorer - World Model Explorer", layout="wide")
 
 st.markdown("## 📥 Stage 1: Input Explorer")
 st.write("Load demonstration trajectories and trigger step-by-step tensor debugger compilation.")
@@ -38,7 +39,7 @@ else:
         # Upload
         uploaded_file = st.file_uploader("Or Upload Custom Episode/Trajectory (.h5, .pkl)", type=["h5", "hdf5", "pkl"])
         if uploaded_file is not None:
-            scratch_dir = "/home/vvijaykumar/.gemini/antigravity-ide/brain/25458c0f-e26c-44f2-9682-23adefaf5468/scratch"
+            scratch_dir = os.path.join(ROOT_DIR, "scratch")
             os.makedirs(scratch_dir, exist_ok=True)
             traj_path = os.path.join(scratch_dir, uploaded_file.name)
             with open(traj_path, "wb") as f:
@@ -102,4 +103,4 @@ else:
             st.image(obs_img, caption="Agent Frame R1", width=320)
 
     # Render debug controls
-    render_debugger_navigation("pages/03_Input_Explorer.py")
+    render_debugger_navigation("views/03_Input_Explorer.py")

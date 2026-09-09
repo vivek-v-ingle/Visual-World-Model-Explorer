@@ -10,7 +10,9 @@ from typing import Dict, Any, List
 from core.types import BaseModelBackend
 
 # Dynamic path adjustment for osvi-wm imports
-sys.path.insert(0, '/home/vvijaykumar/osvi-wm')
+_osvi_path = os.path.expanduser("~/osvi-wm")
+if os.path.exists(_osvi_path) and _osvi_path not in sys.path:
+    sys.path.insert(0, _osvi_path)
 
 class OSVIWorldModelBackend(BaseModelBackend):
     """

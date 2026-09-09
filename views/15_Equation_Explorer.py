@@ -1,14 +1,16 @@
 import streamlit as st
 import sys
+import os
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 
 # Adjust path to import files
-sys.path.insert(0, '/home/vvijaykumar/Visual-World-Model-Explorer')
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 from core.explanations import EQUATIONS
 
-st.set_page_config(page_title="Equation Explorer - World Model Explorer", layout="wide")
 
 st.markdown("## 🧮 Equation Explorer & Mathematical Sandbox")
 st.write("Understand the core mathematical formulations of World Models through interactive playgrounds.")
@@ -93,7 +95,7 @@ elif selected_eq == "Self-Attention":
     st.write(eq["explanation"])
     
     st.subheader("🎮 Attention Sandbox")
-    st.write("Configure Query ($Q$) and Key ($K$) vectors to observe how temperature ($\sqrt{d_k}$ or $\\tau$) impacts the attention weight distribution.")
+    st.write(r"Configure Query ($Q$) and Key ($K$) vectors to observe how temperature ($\sqrt{d_k}$ or $\tau$) impacts the attention weight distribution.")
     
     col_v1, col_v2 = st.columns(2)
     

@@ -39,19 +39,21 @@ class DemoJEPABackend(BaseModelBackend):
         self.pred_embed_dim = 1024
 
     def get_supported_checkpoints(self) -> Dict[str, str]:
+        home = os.path.expanduser("~")
         return {
-            "Demo-JEPA Dreamer + AC (Stage 2 Co-trained)": "/home/vvijaykumar/Demo-JEPA/exp/vjepa_2_1_dreamer_ac/latest.pt",
-            "Demo-JEPA Dreamer Predictor (Stage 1 Cross-Attn)": "/home/vvijaykumar/Demo-JEPA/exp/vjepa_2_1_dreamer_predictor/latest.pt",
-            "Demo-JEPA AC Predictor (Stage 0 Latent Dynamics)": "/home/vvijaykumar/Demo-JEPA/exp/vjepa_2_1_ac/latest.pt",
+            "Demo-JEPA Dreamer + AC (Stage 2 Co-trained)": os.path.join(home, "Demo-JEPA/exp/vjepa_2_1_dreamer_ac/latest.pt"),
+            "Demo-JEPA Dreamer Predictor (Stage 1 Cross-Attn)": os.path.join(home, "Demo-JEPA/exp/vjepa_2_1_dreamer_predictor/latest.pt"),
+            "Demo-JEPA AC Predictor (Stage 0 Latent Dynamics)": os.path.join(home, "Demo-JEPA/exp/vjepa_2_1_ac/latest.pt"),
         }
 
     def get_default_trajectories(self) -> Dict[str, str]:
+        home = os.path.expanduser("~")
         local_sample = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../assets/sample_traj.pkl"))
         return {
-            "Sawyer Pick-and-Place (Episode 0, .h5)": "/home/vvijaykumar/Demo-JEPA/data/pick_place/sawyer/episode_0.h5",
-            "Fairino Demo Episode 0 (.h5)": "/home/vvijaykumar/jepa-world-model-control/data/fairino_episodes/episode_0.h5",
+            "Sawyer Pick-and-Place (Episode 0, .h5)": os.path.join(home, "Demo-JEPA/data/pick_place/sawyer/episode_0.h5"),
+            "Fairino Demo Episode 0 (.h5)": os.path.join(home, "jepa-world-model-control/data/fairino_episodes/episode_0.h5"),
             "Packaged Sample Trajectory (.pkl)": local_sample,
-            "ZED Lab Demonstration (.pkl)": os.path.expanduser("~/OSVI-Deploy/traj_zed_real.pkl"),
+            "ZED Lab Demonstration (.pkl)": os.path.join(home, "OSVI-Deploy/traj_zed_real.pkl"),
         }
 
     def load_trajectory(self, traj_path: str) -> Dict[str, Any]:
@@ -143,7 +145,9 @@ class DemoJEPABackend(BaseModelBackend):
         }
 
     def _load_pkl_trajectory(self, pkl_path: str) -> Dict[str, Any]:
-        sys.path.insert(0, '/home/vvijaykumar/osvi-wm')
+        osvi_dir = os.path.expanduser("~/osvi-wm")
+        if os.path.exists(osvi_dir) and osvi_dir not in sys.path:
+            sys.path.insert(0, osvi_dir)
         try:
             from dataset.agent_dataset import AgentDemonstrations
             from dataset.teacher_dataset import TeacherDemonstrations

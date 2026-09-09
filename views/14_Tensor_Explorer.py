@@ -1,14 +1,16 @@
 import streamlit as st
 import sys
+import os
 import numpy as np
 import torch
 import plotly.express as px
 
 # Adjust path to import files
-sys.path.insert(0, '/home/vvijaykumar/Visual-World-Model-Explorer')
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 from core.explanations import TENSOR_DESCRIPTIONS
 
-st.set_page_config(page_title="Tensor Explorer - World Model Explorer", layout="wide")
 
 st.markdown("## 🔍 Central Tensor Explorer")
 st.write("Inspect and probe any intermediate activation tensor in the model's computation graph.")

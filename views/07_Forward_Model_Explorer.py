@@ -1,13 +1,15 @@
 import streamlit as st
 import sys
+import os
 import numpy as np
 
 # Adjust path to import files
-sys.path.insert(0, '/home/vvijaykumar/Visual-World-Model-Explorer')
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 from core.manager import render_debugger_navigation
 from visualizers.plots import plot_interactive_attention
 
-st.set_page_config(page_title="Forward Model Explorer - World Model Explorer", layout="wide")
 
 st.markdown("## 🔮 Stage 5: Forward Model Explorer")
 st.write("Examine the self-attention weights inside the causal Transformer blocks of the Forward Transition Model.")
@@ -46,4 +48,4 @@ else:
             st.plotly_chart(fig, use_container_width=True)
 
 # Render debug timeline
-render_debugger_navigation("pages/07_Forward_Model_Explorer.py")
+render_debugger_navigation("views/07_Forward_Model_Explorer.py")

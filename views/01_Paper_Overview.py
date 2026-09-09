@@ -1,11 +1,13 @@
 import streamlit as st
+import os
 import sys
 
-# Adjust path to import files
-sys.path.insert(0, '/home/vvijaykumar/Visual-World-Model-Explorer')
+# Ensure repository root is in path
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 from core.explanations import PAPER_OVERVIEW_CONTENT
 
-st.set_page_config(page_title="Paper Overview - World Model Explorer", layout="wide")
 
 st.markdown("## 📖 Paper Overview & One-Shot Learning Concepts")
 st.write("Understand the core foundations of predictive latent world models before diving into spatiotemporal debugging.")

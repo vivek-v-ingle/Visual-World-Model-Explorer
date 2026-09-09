@@ -1,6 +1,5 @@
 import streamlit as st
 
-st.set_page_config(page_title="About - World Model Explorer", layout="wide")
 
 st.markdown("## 🔮 About Visual World Model Explorer")
 st.write("Visual World Model Explorer is an open-source interactive textbook and debugger for robotic latent world models.")

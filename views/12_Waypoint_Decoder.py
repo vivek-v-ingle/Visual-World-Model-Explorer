@@ -1,13 +1,15 @@
 import streamlit as st
 import sys
+import os
 import numpy as np
 import pandas as pd
 
 # Adjust path to import files
-sys.path.insert(0, '/home/vvijaykumar/Visual-World-Model-Explorer')
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 from core.manager import render_debugger_navigation
 
-st.set_page_config(page_title="Waypoint Decoder - World Model Explorer", layout="wide")
 
 st.markdown("## 📊 Stage 8: Waypoint Decoder (MLP Planner Head)")
 st.write("Examine the final sequence of predicted image-space spatial waypoints before world-coordinate projection.")
@@ -52,4 +54,4 @@ else:
         st.line_chart(df_wps["Grasp Score"])
 
 # Render debug timeline
-render_debugger_navigation("pages/12_Waypoint_Decoder.py")
+render_debugger_navigation("views/12_Waypoint_Decoder.py")

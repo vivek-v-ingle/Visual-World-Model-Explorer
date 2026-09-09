@@ -1,13 +1,15 @@
 import streamlit as st
 import sys
+import os
 import numpy as np
 
 # Adjust path to import files
-sys.path.insert(0, '/home/vvijaykumar/Visual-World-Model-Explorer')
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 from core.manager import render_debugger_navigation
 from visualizers.plots import render_feature_heatmap, preprocess_image_tensor
 
-st.set_page_config(page_title="Encoder Explorer - World Model Explorer", layout="wide")
 
 st.markdown("## 🧠 Stage 2: Shared ResNet Encoder")
 st.write("Visualizes how the convolutional encoder filters raw RGB frames into deep feature coordinate maps.")
@@ -58,4 +60,4 @@ else:
         st.dataframe(feat_raw[selected_channel].cpu().numpy())
 
 # Render debug timeline
-render_debugger_navigation("pages/04_Encoder_Explorer.py")
+render_debugger_navigation("views/04_Encoder_Explorer.py")

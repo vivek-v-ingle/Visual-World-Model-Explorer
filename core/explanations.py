@@ -107,20 +107,20 @@ EQUATIONS = {
     }
 }
 
-PAPER_SECTIONS = [
+OSVI_PAPER_SECTIONS = [
     {
         "id": "intro",
         "title": "1. One-Shot Visual Imitation",
         "summary": "Imitating actions from a single demonstration requires learning a dynamic representation of tasks. OSVI-WM achieves this through a visual world model, avoiding direct pixel reconstruction.",
-        "code_link": "models/model.py#L88-L130",
-        "visual_page": "01_Paper_Overview",
+        "code_link": "models/model.py#88-130",
+        "visual_page": "00_Home",
         "tensor": "context"
     },
     {
         "id": "encoder",
         "title": "2. Shared ResNet Encoder",
         "summary": "Converts RGB video frames into high-dimensional feature maps using a ResNet-18 convnet backend. The encoder is shared between teacher demonstration and agent frames.",
-        "code_link": "models/basic_embeddings.py#L79-L109",
+        "code_link": "models/basic_embeddings.py#79-109",
         "visual_page": "04_Encoder_Explorer",
         "tensor": "resnet_features_raw"
     },
@@ -128,7 +128,7 @@ PAPER_SECTIONS = [
         "id": "action",
         "title": "3. Action Model (Non-Local Temporal Attention)",
         "summary": "Models spatiotemporal dependencies. Employs a sequence of causal Non-Local layers that calculate self-attention across time and space tokens.",
-        "code_link": "models/model.py#L61-L87",
+        "code_link": "models/model.py#61-87",
         "visual_page": "06_Action_Model_Explorer",
         "tensor": "action_attn_layer_0"
     },
@@ -136,7 +136,7 @@ PAPER_SECTIONS = [
         "id": "forward",
         "title": "4. Forward World Model (Autoregressive Rollout)",
         "summary": "Predicts future state representations. Uses a causal GPT-style Transformer to imagine future latent frames step-by-step.",
-        "code_link": "models/system_model.py#L23-L97",
+        "code_link": "models/system_model.py#23-97",
         "visual_page": "07_Forward_Model_Explorer",
         "tensor": "predicted_latent_states"
     },
@@ -144,7 +144,7 @@ PAPER_SECTIONS = [
         "id": "spatial",
         "title": "5. Spatial Softmax (Feature Coordinates)",
         "summary": "Extracts exact expected 2D coordinates from predicted feature maps. Bypasses decoder reconstruction by mapping activations directly to coordinate spaces.",
-        "code_link": "models/model.py#L169-L177",
+        "code_link": "models/model.py#169-177",
         "visual_page": "09_Spatial_Embedding",
         "tensor": "spatial_softmax_mask"
     },
@@ -152,8 +152,62 @@ PAPER_SECTIONS = [
         "id": "pooling",
         "title": "6. Temporal Attentive Pooling & Waypoints",
         "summary": "Gathers information from all imagined frames. A learned query token cross-attends over all temporal steps, and maps the output to a multi-waypoint 3D sequence.",
-        "code_link": "models/attentive_pooler.py#L21-L103",
+        "code_link": "models/attentive_pooler.py#21-103",
         "visual_page": "11_Temporal_Pooling",
         "tensor": "pooler_attention"
     }
 ]
+
+JEPA_PAPER_SECTIONS = [
+    {
+        "id": "vjepa",
+        "title": "1. V-JEPA 2.1 ViT-Giant Vision Backbone",
+        "summary": "Encodes observation and video demonstration frames into spatio-temporal patch tokens (256 x 1408) using RoPE positional embeddings, discarding pixel-level noise.",
+        "code_link": "backends/jepa/jepa_backend.py#150-195",
+        "visual_page": "02_Architecture_Explorer",
+        "tensor": "vjepa_latent_tokens"
+    },
+    {
+        "id": "tokens",
+        "title": "2. Spatio-Temporal Patch Token Space (Z)",
+        "summary": "Represents the scene as abstract high-level geometrical tokens, providing scale-invariant feature embeddings for subgoals.",
+        "code_link": "backends/jepa/jepa_backend.py#200-245",
+        "visual_page": "02_Architecture_Explorer",
+        "tensor": "vjepa_full_grid"
+    },
+    {
+        "id": "dreamer",
+        "title": "3. Dreamer Predictor Subgoal Synthesis",
+        "summary": "Cross-attends observation query tokens against reference keys/values to predict the prospective target subgoal embedding s_hat_target.",
+        "code_link": "backends/jepa/jepa_backend.py#250-290",
+        "visual_page": "10_Attention_Explorer",
+        "tensor": "dreamer_attention"
+    },
+    {
+        "id": "dynamics",
+        "title": "4. Action-Conditioned Forward Dynamics (F_wm)",
+        "summary": "Simulates causal transitions s_t+1 = F_wm(s_t, a_t) inside abstract latent space conditioned on continuous 7-DoF candidate actions.",
+        "code_link": "backends/jepa/jepa_backend.py#295-340",
+        "visual_page": "21_Demo_JEPA_Pipeline",
+        "tensor": "predicted_latent_states"
+    },
+    {
+        "id": "cem",
+        "title": "5. CEM Latent Space Trajectory Planner",
+        "summary": "Samples 100 continuous 7-DoF candidate action sequences and refines 10 elite selections via Cross-Entropy Method (CEM) to minimize latent L1 distance.",
+        "code_link": "backends/jepa/jepa_backend.py#345-385",
+        "visual_page": "21_Demo_JEPA_Pipeline",
+        "tensor": "pooled_states"
+    },
+    {
+        "id": "controller",
+        "title": "6. 7-DoF Controller & Adaptive Subgoal Tracker",
+        "summary": "Streams continuous [dx, dy, dz, drx, dry, drz, gripper] delta commands directly to Fairino FR10 / Sawyer controllers with goal progression tracker D_k < 1.0.",
+        "code_link": "backends/jepa/jepa_backend.py#370-387",
+        "visual_page": "21_Demo_JEPA_Pipeline",
+        "tensor": "predicted_qpos"
+    }
+]
+
+# Backward compatibility alias
+PAPER_SECTIONS = OSVI_PAPER_SECTIONS

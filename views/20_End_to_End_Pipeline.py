@@ -8,11 +8,12 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 # Adjust path to import files
-sys.path.insert(0, '/home/vvijaykumar/Visual-World-Model-Explorer')
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 from core.manager import get_manager, render_debugger_navigation
 from visualizers.plots import preprocess_image_tensor
 
-st.set_page_config(page_title="End-to-End Pipeline - World Model Explorer", layout="wide")
 
 manager = get_manager()
 active_model = manager.active_backend_name
@@ -209,4 +210,4 @@ else:
                 st.write("- **Total Waypoints:** 15 Cartesian Steps")
 
 st.divider()
-render_debugger_navigation("pages/20_End_to_End_Pipeline.py")
+render_debugger_navigation("views/20_End_to_End_Pipeline.py")

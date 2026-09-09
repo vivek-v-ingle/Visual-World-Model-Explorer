@@ -1,13 +1,15 @@
 import streamlit as st
 import sys
+import os
 import numpy as np
 
 # Adjust path to import files
-sys.path.insert(0, '/home/vvijaykumar/Visual-World-Model-Explorer')
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 from core.manager import render_debugger_navigation
 from visualizers.plots import preprocess_image_tensor, render_feature_heatmap
 
-st.set_page_config(page_title="Latent Space Explorer - World Model Explorer", layout="wide")
 
 st.markdown("## 🌌 Stage 3: Latent Space Explorer")
 st.write("Examine the latent representations $Z_E$ (expert demonstration features) and $Z_R$ (agent current state features).")
@@ -52,4 +54,4 @@ else:
         st.image(blended_r, caption=f"ZR Frame 1 Channel {selected_channel_r}", use_container_width=True)
 
 # Render debug timeline
-render_debugger_navigation("pages/05_Latent_Space_Explorer.py")
+render_debugger_navigation("views/05_Latent_Space_Explorer.py")

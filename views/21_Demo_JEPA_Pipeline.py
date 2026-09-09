@@ -8,12 +8,13 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 # Adjust path to import files
-sys.path.insert(0, '/home/vvijaykumar/Visual-World-Model-Explorer')
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 from core.manager import get_manager, render_debugger_navigation
 from backends.jepa.jepa_backend import DemoJEPABackend
 from visualizers.plots import preprocess_image_tensor
 
-st.set_page_config(page_title="Demo-JEPA Real Pipeline - World Model Explorer", layout="wide")
 
 st.markdown("## 🧠 Demo-JEPA Real Pipeline Explorer")
 st.write("Explore the live **Joint-Embedding Predictive Architecture (Demo-JEPA)** dataflow, executing real V-JEPA 2.1 ViT latent representations, Dreamer Predictor cross-attention subgoals, and CEM latent-space action planning.")
@@ -64,7 +65,7 @@ with col_ctrl:
     # Custom upload option
     uploaded_h5 = st.file_uploader("Or Upload HDF5 Episode (.h5)", type=["h5", "hdf5", "pkl"])
     if uploaded_h5 is not None:
-        scratch_dir = "/home/vvijaykumar/.gemini/antigravity-ide/brain/25458c0f-e26c-44f2-9682-23adefaf5468/scratch"
+        scratch_dir = os.path.join(ROOT_DIR, "scratch")
         os.makedirs(scratch_dir, exist_ok=True)
         traj_file = os.path.join(scratch_dir, uploaded_h5.name)
         with open(traj_file, "wb") as f:
@@ -276,4 +277,4 @@ if tensors is not None and "action_7d_deltas" in tensors:
         st.plotly_chart(fig_3d, use_container_width=True)
 
 st.divider()
-render_debugger_navigation("pages/21_Demo_JEPA_Pipeline.py")
+render_debugger_navigation("views/21_Demo_JEPA_Pipeline.py")

@@ -3,16 +3,22 @@ import sys
 import os
 
 # Adjust path to import files
-sys.path.insert(0, '/home/vvijaykumar/Visual-World-Model-Explorer')
+ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 from core.manager import init_shared_state, get_manager
 
-# Configure page settings
+# Configure page settings once for the application
 st.set_page_config(
     page_title="Visual World Model Explorer",
     page_icon="🔮",
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Initialize Session State variables
+init_shared_state()
+manager = get_manager()
 
 # Apply global premium theme and styles
 st.markdown("""
@@ -61,22 +67,23 @@ st.markdown("""
         display: inline-block;
         margin-bottom: 0.5rem;
     }
+    .mermaid {
+        font-size: 1.1rem !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize Session State variables
-init_shared_state()
-manager = get_manager()
-
+# -------------------------------------------------------------
 # Sidebar Model Switcher
-st.sidebar.markdown("### 🔌 Select Active World Model")
+# -------------------------------------------------------------
+st.sidebar.markdown("## 🔮 World Model Hub")
 backend_options = ["OSVI-WM", "Demo-JEPA"]
 current_idx = backend_options.index(manager.active_backend_name) if manager.active_backend_name in backend_options else 0
 selected_backend = st.sidebar.radio(
     "Active World Model:",
     backend_options,
     index=current_idx,
-    help="Switching models tailors the entire dashboard to display only the selected model's pipeline."
+    help="Switching models tailors the entire sidebar and dashboard to display only the selected model's pipeline."
 )
 
 if selected_backend != manager.active_backend_name:
@@ -85,91 +92,56 @@ if selected_backend != manager.active_backend_name:
     st.session_state["loaded_trajectory"] = None
     st.rerun()
 
-# Layout Header
-st.markdown('<div class="premium-header">🔮 Visual World Model Explorer</div>', unsafe_allow_html=True)
-st.markdown(f'<div class="premium-subheader">Interactive Pipeline & Tensor Debugger — Currently Viewing: <b>{manager.active_backend_name}</b></div>', unsafe_allow_html=True)
+st.sidebar.divider()
 
-st.divider()
+# -------------------------------------------------------------
+# Dynamic Page Definitions per Active Model
+# -------------------------------------------------------------
+home_page = st.Page("views/00_Home.py", title="Home Overview", icon="🏠", default=True)
 
-# Model Specific Dashboard View
 if manager.active_backend_name == "OSVI-WM":
-    col_main, col_stats = st.columns([2, 1])
-    with col_main:
-        st.markdown('<div class="model-badge">OSVI-WM Active</div>', unsafe_allow_html=True)
-        st.markdown("""
-        ### 📍 OSVI-WM: One-Shot Visual Imitation World Model
-        **OSVI-WM** simulates future robotic trajectories directly in **spatial-feature coordinate space** using differentiable spatial softmax:
-        
-        1. **ResNet-18/50 Shared Encoder:** Extracts high-resolution spatial feature maps `[B, 512, 8, 10]`.
-        2. **Causal Action Model:** Encodes cross-embodiment demonstration and current observation.
-        3. **Autoregressive GPT Forward Model:** Rolls out future latent states step-by-step.
-        4. **Differentiable Spatial Softmax:** Maps feature heatmaps directly to continuous 2D/3D coordinates without decoding pixels.
-        5. **Waypoint Decoder Head:** Dispatches 15 3D Cartesian waypoints $(x, y, z, \text{grasp})$ to the robot.
-        """)
-        
-        st.info("💡 **Recommended Next Step:** Open **`20 End to End Pipeline`** or **`03 Input Explorer`** to inspect the 9-stage OSVI-WM dataflow.")
+    pages = {
+        "Overview": [home_page],
+        "📍 OSVI-WM Pipeline": [
+            st.Page("views/20_End_to_End_Pipeline.py", title="End-to-End Pipeline", icon="🌐"),
+            st.Page("views/02_Architecture_Explorer.py", title="Architecture Explorer", icon="🏗️"),
+            st.Page("views/03_Input_Explorer.py", title="Input & Trajectory", icon="📥"),
+            st.Page("views/04_Encoder_Explorer.py", title="ResNet Shared Encoder", icon="🔎"),
+            st.Page("views/05_Latent_Space_Explorer.py", title="Latent Space (Z)", icon="🌌"),
+            st.Page("views/06_Action_Model_Explorer.py", title="Action Model", icon="🎬"),
+            st.Page("views/07_Forward_Model_Explorer.py", title="Forward Transition Model", icon="🔮"),
+            st.Page("views/09_Spatial_Embedding.py", title="Spatial Softmax", icon="📍"),
+            st.Page("views/10_Attention_Explorer.py", title="Attention Heatmaps", icon="🔥"),
+            st.Page("views/11_Temporal_Pooling.py", title="Attentive Pooler", icon="⚡"),
+            st.Page("views/12_Waypoint_Decoder.py", title="Waypoint Decoder Head", icon="📊"),
+            st.Page("views/13_Trajectory_Explorer.py", title="3D Trajectory Viewer", icon="🤖"),
+        ],
+        "🛠️ Tools & Comparison": [
+            st.Page("views/14_Tensor_Explorer.py", title="Tensor Registry", icon="📐"),
+            st.Page("views/15_Equation_Explorer.py", title="Equation Sandbox", icon="📝"),
+            st.Page("views/16_Paper_Reader.py", title="Paper Reader", icon="📖"),
+            st.Page("views/17_Model_Comparison.py", title="Model Comparison", icon="⚖️"),
+            st.Page("views/18_Settings.py", title="Settings", icon="⚙️"),
+            st.Page("views/19_About.py", title="About", icon="ℹ️"),
+        ]
+    }
+else:
+    pages = {
+        "Overview": [home_page],
+        "🧠 Demo-JEPA Pipeline": [
+            st.Page("views/21_Demo_JEPA_Pipeline.py", title="Real Demo-JEPA Pipeline", icon="🧠"),
+            st.Page("views/02_Architecture_Explorer.py", title="Architecture Explorer", icon="🏗️"),
+            st.Page("views/10_Attention_Explorer.py", title="Cross-Attention Heatmaps", icon="🔥"),
+        ],
+        "🛠️ Tools & Comparison": [
+            st.Page("views/14_Tensor_Explorer.py", title="Tensor Registry", icon="📐"),
+            st.Page("views/15_Equation_Explorer.py", title="Equation Sandbox", icon="📝"),
+            st.Page("views/16_Paper_Reader.py", title="Paper Reader", icon="📖"),
+            st.Page("views/17_Model_Comparison.py", title="Model Comparison", icon="⚖️"),
+            st.Page("views/18_Settings.py", title="Settings", icon="⚙️"),
+            st.Page("views/19_About.py", title="About", icon="ℹ️"),
+        ]
+    }
 
-    with col_stats:
-        st.markdown('<div class="model-card">', unsafe_allow_html=True)
-        st.markdown("### ⚙️ OSVI-WM Parameters")
-        st.write("- **Backbone:** ResNet-18 / ResNet-50")
-        st.write("- **Latent Dim ($Z$):** `512 x 8 x 10`")
-        st.write("- **Planning Decoder:** Attentive Pooling + MLP Head")
-        st.write("- **Output Space:** 3D Cartesian Waypoints `(u, v, d, grasp)`")
-        st.write("- **Target Robots:** Franka Emika Panda, UR5")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown("### 🗺️ OSVI-WM Pipeline Flowchart")
-    st.markdown("""
-    ```mermaid
-    graph LR
-        V[🎥 RGB Video Demo] --> E[🔎 ResNet Encoder]
-        E --> L[🌌 Latent Space Z]
-        L --> AM[🎬 Action Model]
-        AM --> FM[🔮 Autoregressive Forward Model]
-        FM --> SS[📍 Spatial Softmax Coords]
-        SS --> TP[⚡ Attentive Pooler]
-        TP --> WD[📊 Waypoint Decoder]
-        WD --> R[🤖 3D Cartesian Path]
-    ```
-    """)
-
-elif manager.active_backend_name == "Demo-JEPA":
-    col_main, col_stats = st.columns([2, 1])
-    with col_main:
-        st.markdown('<div class="model-badge">Demo-JEPA Active</div>', unsafe_allow_html=True)
-        st.markdown(r"""
-        ### 🧠 Demo-JEPA: Joint-Embedding Predictive Architecture
-        **Demo-JEPA** operates entirely in **abstract latent embedding space**, discarding raw pixel noise and planning directly in latent representations:
-        
-        1. **V-JEPA 2.1 ViT-Giant Encoder:** Encodes frames into 256 spatio-temporal patch tokens `[B, 256, 1408]`.
-        2. **Dreamer Predictor:** Cross-attends demonstration frames to synthesize latent subgoals $\hat{s}_{target}$.
-        3. **Action-Conditioned World Model ($F_{wm}$):** Simulates prospective latent rollouts conditioned on candidate actions.
-        4. **CEM Latent Trajectory Planner:** Samples continuous candidate actions and optimizes 7-DoF deltas via Cross-Entropy Method.
-        5. **7-DoF Joint / Controller Stream:** Dispatches $[\Delta x, \Delta y, \Delta z, \Delta r_x, \Delta r_y, \Delta r_z, \text{gripper}]$ commands directly to physical robots (Fairino FR10 / Sawyer).
-        """)
-        
-        st.info("💡 **Recommended Next Step:** Open **`21 Demo JEPA Pipeline`** to run real latent rollouts and CEM optimization.")
-
-    with col_stats:
-        st.markdown('<div class="model-card">', unsafe_allow_html=True)
-        st.markdown("### ⚙️ Demo-JEPA Parameters")
-        st.write("- **Backbone:** V-JEPA 2.1 ViT-Giant (RoPE)")
-        st.write("- **Latent Dim ($Z$):** `256 x 1408` (16x16 patch grid)")
-        st.write("- **Subgoal Module:** Dreamer Cross-Attention Predictor")
-        st.write("- **Planner:** Cross-Entropy Method (CEM) Latent MPC")
-        st.write("- **Output Space:** 7-DoF Robot Actions / Joint angles ($qpos$)")
-        st.write("- **Target Robots:** Fairino FR10, Sawyer, Franka")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown("### 🗺️ Demo-JEPA Pipeline Flowchart")
-    st.markdown("""
-    ```mermaid
-    graph LR
-        V[🎥 Demonstration Episode] --> E[🔎 V-JEPA 2.1 ViT-Giant]
-        O[📷 Current Observation] --> E
-        E --> DP[🔮 Dreamer Subgoal]
-        DP --> CEM[🎯 CEM Latent Planner]
-        CEM --> FR[🦾 Fairino FR10 7-DoF Stream]
-    ```
-    """)
+pg = st.navigation(pages)
+pg.run()

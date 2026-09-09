@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-st.set_page_config(page_title="Model Comparison - World Model Explorer", layout="wide")
 
 st.markdown("## ⚖️ World Model Comparison Mode")
 st.write("Compare the architecture, latent representations, and predictive rollouts of OSVI-WM against other predictive latent world models.")

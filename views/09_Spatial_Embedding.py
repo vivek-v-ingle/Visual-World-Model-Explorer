@@ -1,13 +1,15 @@
 import streamlit as st
 import sys
+import os
 import numpy as np
 
 # Adjust path to import files
-sys.path.insert(0, '/home/vvijaykumar/Visual-World-Model-Explorer')
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 from core.manager import render_debugger_navigation
 from visualizers.plots import plot_spatial_softmax_distribution
 
-st.set_page_config(page_title="Spatial Embedding - World Model Explorer", layout="wide")
 
 st.markdown("## 📍 Stage 6: Spatial Embedding (Spatial Softmax)")
 st.write("Visualizes how a 2D probability distribution collapses the convolutional feature map to a single $(x, y)$ expected coordinate node.")
@@ -47,4 +49,4 @@ else:
         st.plotly_chart(fig, use_container_width=True)
 
 # Render debug timeline
-render_debugger_navigation("pages/09_Spatial_Embedding.py")
+render_debugger_navigation("views/09_Spatial_Embedding.py")

@@ -1,13 +1,15 @@
 import streamlit as st
 import sys
+import os
 import numpy as np
 import plotly.express as px
 
 # Adjust path to import files
-sys.path.insert(0, '/home/vvijaykumar/Visual-World-Model-Explorer')
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 from core.manager import render_debugger_navigation
 
-st.set_page_config(page_title="Temporal Pooling - World Model Explorer", layout="wide")
 
 st.markdown("## ⚡ Stage 7: Temporal Attentive Pooling")
 st.write("Understand how learned query token cross-attends over all temporal rollout steps to capture the essence of the path.")
@@ -48,4 +50,4 @@ else:
         st.caption("First 100 features of the Pooled State Vector")
 
 # Render debug timeline
-render_debugger_navigation("pages/11_Temporal_Pooling.py")
+render_debugger_navigation("views/11_Temporal_Pooling.py")
