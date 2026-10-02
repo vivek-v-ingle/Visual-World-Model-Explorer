@@ -77,7 +77,7 @@ st.markdown("""
 # Sidebar Model Switcher
 # -------------------------------------------------------------
 st.sidebar.markdown("## 🔮 World Model Hub")
-backend_options = ["OSVI-WM", "Demo-JEPA"]
+backend_options = ["OSVI-WM", "Demo-JEPA", "DINO-WM", "JEPA-WM"]
 current_idx = backend_options.index(manager.active_backend_name) if manager.active_backend_name in backend_options else 0
 selected_backend = st.sidebar.radio(
     "Active World Model:",
@@ -99,6 +99,15 @@ st.sidebar.divider()
 # -------------------------------------------------------------
 home_page = st.Page("views/00_Home.py", title="Home Overview", icon="🏠", default=True)
 
+common_tools = [
+    st.Page("views/14_Tensor_Explorer.py", title="Tensor Registry", icon="📐"),
+    st.Page("views/15_Equation_Explorer.py", title="Equation Sandbox", icon="📝"),
+    st.Page("views/16_Paper_Reader.py", title="Paper Reader", icon="📖"),
+    st.Page("views/17_Model_Comparison.py", title="Model Comparison", icon="⚖️"),
+    st.Page("views/18_Settings.py", title="Settings", icon="⚙️"),
+    st.Page("views/19_About.py", title="About", icon="ℹ️"),
+]
+
 if manager.active_backend_name == "OSVI-WM":
     pages = {
         "Overview": [home_page],
@@ -116,16 +125,9 @@ if manager.active_backend_name == "OSVI-WM":
             st.Page("views/12_Waypoint_Decoder.py", title="Waypoint Decoder Head", icon="📊"),
             st.Page("views/13_Trajectory_Explorer.py", title="3D Trajectory Viewer", icon="🤖"),
         ],
-        "🛠️ Tools & Comparison": [
-            st.Page("views/14_Tensor_Explorer.py", title="Tensor Registry", icon="📐"),
-            st.Page("views/15_Equation_Explorer.py", title="Equation Sandbox", icon="📝"),
-            st.Page("views/16_Paper_Reader.py", title="Paper Reader", icon="📖"),
-            st.Page("views/17_Model_Comparison.py", title="Model Comparison", icon="⚖️"),
-            st.Page("views/18_Settings.py", title="Settings", icon="⚙️"),
-            st.Page("views/19_About.py", title="About", icon="ℹ️"),
-        ]
+        "🛠️ Tools & Comparison": common_tools
     }
-else:
+elif manager.active_backend_name == "Demo-JEPA":
     pages = {
         "Overview": [home_page],
         "🧠 Demo-JEPA Pipeline": [
@@ -133,14 +135,27 @@ else:
             st.Page("views/02_Architecture_Explorer.py", title="Architecture Explorer", icon="🏗️"),
             st.Page("views/10_Attention_Explorer.py", title="Cross-Attention Heatmaps", icon="🔥"),
         ],
-        "🛠️ Tools & Comparison": [
-            st.Page("views/14_Tensor_Explorer.py", title="Tensor Registry", icon="📐"),
-            st.Page("views/15_Equation_Explorer.py", title="Equation Sandbox", icon="📝"),
-            st.Page("views/16_Paper_Reader.py", title="Paper Reader", icon="📖"),
-            st.Page("views/17_Model_Comparison.py", title="Model Comparison", icon="⚖️"),
-            st.Page("views/18_Settings.py", title="Settings", icon="⚙️"),
-            st.Page("views/19_About.py", title="About", icon="ℹ️"),
-        ]
+        "🛠️ Tools & Comparison": common_tools
+    }
+elif manager.active_backend_name == "DINO-WM":
+    pages = {
+        "Overview": [home_page],
+        "🦕 DINO-WM Pipeline": [
+            st.Page("views/22_DINO_WM_Pipeline.py", title="DINO-WM Pipeline", icon="🦕"),
+            st.Page("views/02_Architecture_Explorer.py", title="Architecture Explorer", icon="🏗️"),
+            st.Page("views/10_Attention_Explorer.py", title="Patch Attention Heatmaps", icon="🔥"),
+        ],
+        "🛠️ Tools & Comparison": common_tools
+    }
+elif manager.active_backend_name == "JEPA-WM":
+    pages = {
+        "Overview": [home_page],
+        "🧠 JEPA-WM (DINOv3) Pipeline": [
+            st.Page("views/23_JEPA_WM_Pipeline.py", title="JEPA-WM 12-Layer Pipeline", icon="🧠"),
+            st.Page("views/02_Architecture_Explorer.py", title="Architecture Explorer", icon="🏗️"),
+            st.Page("views/10_Attention_Explorer.py", title="Subgoal Cross-Attention", icon="🔥"),
+        ],
+        "🛠️ Tools & Comparison": common_tools
     }
 
 pg = st.navigation(pages)

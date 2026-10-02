@@ -55,8 +55,13 @@ def get_manager() -> VisualExplorerManager:
         # We can add backends
         from backends.osvi.osvi_backend import MockFastWAMBackend
         from backends.jepa.jepa_backend import DemoJEPABackend
+        from backends.dino_wm.dino_wm_backend import DINOWMBackend
+        from backends.jepa_wm.jepa_wm_backend import JEPAWMBackend
+
         manager.register_backend("FastWAM (Mock)", MockFastWAMBackend())
         manager.register_backend("Demo-JEPA", DemoJEPABackend())
+        manager.register_backend("DINO-WM", DINOWMBackend())
+        manager.register_backend("JEPA-WM", JEPAWMBackend())
         
         st.session_state["manager"] = manager
         

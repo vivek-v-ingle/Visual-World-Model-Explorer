@@ -13,6 +13,8 @@ World Models enable robots to "imagine" the future consequences of their actions
 2. **Multi-Model Support:** Compare different world model paradigms side-by-side:
    - **Spatial-Coordinate Latent World Models (e.g. OSVI-WM):** ResNet + Autoregressive Transformer + Differentiable Spatial Softmax.
    - **Joint-Embedding Feature-Space World Models (e.g. Demo-JEPA):** V-JEPA 2.1 ViT-Giant + Dreamer Predictor + Action-Conditioned CEM Latent Planning.
+   - **DINO-WM (Meta FAIR):** DINOv2 ViT-S/14 ($224 \times 224$) + 6-Layer ViTPredictor + CEM Planning.
+   - **JEPA-WM (DINOv3):** DINOv3 ViT-L/16 ($256 \times 256$) + 12-Layer Deep Latent Predictor + Subgoal Cross-Attention.
 3. **Hardware Grounding & 3D Visualizer:** Synchronized trajectory visualizer showing how abstract latent forecasts translate into physical robot paths (3D Cartesian coordinates and 7-DoF joint deltas).
 4. **Interactive Mathematical Sandboxes:** Experiment with differentiable spatial softmax formulas, token attention distributions, and cross-attention matching in real time.
 
@@ -31,15 +33,18 @@ graph TD
     
     Base --> OSVI[📍 OSVI-WM Backend: backends/osvi/]
     Base --> JEPA[🧠 Demo-JEPA Backend: backends/jepa/]
-    Base --> Custom[➕ Custom Backend Plugin: backends/custom/]
+    Base --> DINO[🦕 DINO-WM Backend: backends/dino_wm/]
+    Base --> JEPA3[🧠 JEPA-WM DINOv3 Backend: backends/jepa_wm/]
 
     OSVI --> Vis[📊 Visualizers & 3D Plots: visualizers/plots.py]
     JEPA --> Vis
+    DINO --> Vis
+    JEPA3 --> Vis
     Vis --> UI
 
     class UI ui;
     class Manager,Base core;
-    class OSVI,JEPA,Custom,Vis model;
+    class OSVI,JEPA,DINO,JEPA3,Vis model;
 ```
 
 ---

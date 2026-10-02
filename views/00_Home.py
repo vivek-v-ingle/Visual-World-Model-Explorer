@@ -118,3 +118,90 @@ elif manager.active_backend_name == "Demo-JEPA":
         class O,R tensor;
     ```
     """)
+
+elif manager.active_backend_name == "DINO-WM":
+    col_main, col_stats = st.columns([2, 1])
+    with col_main:
+        st.markdown('<div class="model-badge">DINO-WM Active</div>', unsafe_allow_html=True)
+        st.markdown(r"""
+        ### 🦕 DINO-WM: DINOv2 Visual World Model
+        **DINO-WM** (Meta FAIR) employs frozen **DINOv2 ViT-S/14** spatial patch embeddings paired with a 6-layer action-conditioned ViT predictor:
+        
+        1. **DINOv2 ViT-S/14 Encoder:** Encodes 224x224 RGB frames into 256 spatial patch tokens `[B, 256, 384]`.
+        2. **6-Depth ViTPredictor:** Action-conditioned forward transformer predicts future latent patch representations.
+        3. **Latent Patch Attention Retargeting:** Computes patch-wise attention maps for object-centric tracking.
+        4. **CEM / MPPI Latent Planner:** Evaluates candidate 7-DoF actions against target subgoal representations using $L_1$ objective ($L_{1,\text{thresh}} = 0.70$).
+        """)
+        
+        st.info("💡 **Next Step:** Use the sidebar to open **`DINO-WM Pipeline`** to run live 6-step depth rollouts.")
+
+    with col_stats:
+        st.markdown('<div class="model-card">', unsafe_allow_html=True)
+        st.markdown("### ⚙️ DINO-WM Specifications")
+        st.write("- **Backbone:** DINOv2 ViT-S/14 ($224 \\times 224$)")
+        st.write("- **Latent Dimension ($Z$):** `256 x 384` (16x16 patch grid)")
+        st.write("- **Predictor Depth:** 6-Layer Action-Conditioned Transformer")
+        st.write("- **Planner:** CEM Latent MPC ($L_1$ threshold = 0.70)")
+        st.write("- **Target Robots:** DROID benchmark, Fairino FR10, RoboCasa")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown("### 🗺️ DINO-WM Pipeline Flowchart")
+    st.markdown("""
+    ```mermaid
+    graph TD
+        classDef stage fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#f8fafc;
+        classDef tensor fill:#064e3b,stroke:#34d399,stroke-width:1px,color:#f8fafc;
+
+        O[📷 1. 224x224 RGB Workspace Frame] --> E[🔎 2. DINOv2 ViT-S/14 Encoder]
+        E -->|256 Spatial Patch Tokens: 256x384| VP[🔮 3. 6-Depth ViTPredictor]
+        A[🦾 4. Candidate 7-DoF Actions] -->|Conditioning| VP
+        VP -->|6-Step Latent Rollout z_hat_1:6| CEM[🎯 5. CEM Latent Space Planner]
+        CEM -->|Optimal 7-DoF Actions dx,dy,dz,drx,dry,drz,gripper| R[🦾 6. Fairino FR10 Execution]
+
+        class O,E,VP,A,CEM,R stage;
+    ```
+    """)
+
+elif manager.active_backend_name == "JEPA-WM":
+    col_main, col_stats = st.columns([2, 1])
+    with col_main:
+        st.markdown('<div class="model-badge">JEPA-WM Active</div>', unsafe_allow_html=True)
+        st.markdown(r"""
+        ### 🧠 JEPA-WM: DINOv3 12-Layer Deep Latent World Model
+        **JEPA-WM** combines Meta FAIR's **DINOv3 ViT-L/16** vision backbone with a deep 12-layer action-conditioned predictor for long-horizon latent planning:
+        
+        1. **DINOv3 ViT-L/16 Encoder:** Extracts high-capacity 1024-dimensional patch representations `[B, 256, 1024]`.
+        2. **12-Depth Action-Conditioned Predictor:** Deep transformer dynamics model capable of long-horizon temporal rollouts.
+        3. **Dreamer Cross-Attention Subgoal Module:** Synthesizes prospective goal representations $\hat{s}_{\text{target}}$.
+        4. **7-DoF Joint & Gripper Controller Stream:** Streams continuous Cartesian deltas directly to physical robot arms.
+        """)
+        
+        st.info("💡 **Next Step:** Use the sidebar to open **`JEPA-WM 12-Layer Pipeline`** to run live 12-step depth rollouts.")
+
+    with col_stats:
+        st.markdown('<div class="model-card">', unsafe_allow_html=True)
+        st.markdown("### ⚙️ JEPA-WM Specifications")
+        st.write("- **Backbone:** DINOv3 ViT-L/16 ($256 \\times 256$)")
+        st.write("- **Latent Dimension ($Z$):** `256 x 1024` (16x16 patch grid)")
+        st.write("- **Predictor Depth:** 12-Layer Deep Transformer")
+        st.write("- **Subgoal Module:** Dreamer Cross-Attention Predictor")
+        st.write("- **Target Robots:** DROID, Fairino FR10, Sawyer")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown("### 🗺️ JEPA-WM Pipeline Flowchart")
+    st.markdown("""
+    ```mermaid
+    graph TD
+        classDef stage fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#f8fafc;
+        classDef tensor fill:#064e3b,stroke:#34d399,stroke-width:1px,color:#f8fafc;
+
+        O[📷 1. 256x256 RGB Frame] --> E[🔎 2. DINOv3 ViT-L/16 Encoder]
+        E -->|Patch Tokens: 256x1024| DP[🔮 3. Dreamer Subgoal Cross-Attention]
+        DP -->|Subgoal s_hat_target: 256x1024| VP[🔮 4. 12-Depth Deep Action-Conditioned Predictor]
+        A[🦾 5. Candidate 7-DoF Actions] -->|Conditioning| VP
+        VP -->|12-Step Deep Latent Rollout| CEM[🎯 6. CEM Latent Space MPC]
+        CEM -->|7-DoF Deltas| R[🦾 7. Fairino FR10 Execution]
+
+        class O,E,DP,VP,A,CEM,R stage;
+    ```
+    """)

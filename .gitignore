@@ -39,22 +39,17 @@ env/
 venv/
 ENV/
 
-# Streamlit specific
+# Streamlit & Media
 .streamlit/
 *.mp4
 *.png
 *.jpg
 *.jpeg
 
-# Local model weights
+# Local Model Weights & Scratch Data
 *.pt
 *.pth
-*.bin
-
-# Local IDEs
-.vscode/
-.idea/
-.project
-.pydevproject
-.agents/
-.gemini/
+*.tar
+*.h5
+*.hdf5
+scratch/

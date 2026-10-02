@@ -2,24 +2,61 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-
 st.markdown("## ⚖️ World Model Comparison Mode")
-st.write("Compare the architecture, latent representations, and predictive rollouts of OSVI-WM against other predictive latent world models.")
+st.write("Compare the architecture, latent representations, and predictive rollouts of OSVI-WM, Demo-JEPA, DINO-WM, and JEPA-WM side-by-side.")
+
+all_models = ["OSVI-WM", "Demo-JEPA", "DINO-WM", "JEPA-WM", "FastWAM", "Dreamer (RSSM)"]
+default_models = ["OSVI-WM", "Demo-JEPA", "DINO-WM", "JEPA-WM"]
 
 selected_compare_models = st.multiselect(
     "Select World Models to Compare:",
-    ["OSVI-WM", "FastWAM", "Demo-JEPA", "Dreamer (RSSM)"],
-    default=["OSVI-WM", "Demo-JEPA"]
+    all_models,
+    default=default_models
 )
 
 model_data = {
-    "Model Name": ["OSVI-WM", "FastWAM", "Demo-JEPA", "Dreamer (RSSM)"],
-    "Encoder Type": ["ResNet-18 / ResNet-50", "Dino-v2 (Frozen)", "V-JEPA 2.1 ViT-Giant (RoPE)", "CNN Encoder"],
-    "Latent Dimension ($Z$)": ["512 x 8 x 10 (Spatial Maps)", "1024 (Dense Feature Vector)", "256 x 1408 (Spatio-Temporal Tokens)", "1024 (Stochastic + Deterministic)"],
-    "Predictive Transition (Rollout)": ["Autoregressive Transformer", "Non-autoregressive MLP Block", "Action-Conditioned ViT Predictor (F_wm)", "Recurrent SSM (RSSM)"],
-    "Planning Decoder": ["Attentive Pooling + MLP Head", "MLP Head", "Dreamer Predictor + CEM Latent MPC", "Pixel Reconstruction + Policy Head"],
-    "Primary Use-Case": ["One-Shot Trajectory Imitation", "Real-time High-frequency Control", "Cross-Embodiment Goal Imitation", "Model-based Reinforcement Learning"],
-    "Inference Latency (ms)": [14.5, 4.2, 19.8, 32.5]
+    "Model Name": ["OSVI-WM", "Demo-JEPA", "DINO-WM", "JEPA-WM", "FastWAM", "Dreamer (RSSM)"],
+    "Encoder Type": [
+        "ResNet-18 / ResNet-50",
+        "V-JEPA 2.1 ViT-Giant (RoPE)",
+        "DINOv2 ViT-S/14 (224x224)",
+        "DINOv3 ViT-L/16 (256x256)",
+        "DINOv2 (Frozen)",
+        "CNN Encoder"
+    ],
+    "Latent Dimension ($Z$)": [
+        "512 x 8 x 10 (Spatial Maps)",
+        "256 x 1408 (Spatio-Temporal Tokens)",
+        "256 x 384 (Patch Grid)",
+        "256 x 1024 (High-Capacity Patch Grid)",
+        "1024 (Dense Feature Vector)",
+        "1024 (Stochastic + Deterministic)"
+    ],
+    "Predictive Transition (Rollout)": [
+        "Autoregressive Transformer",
+        "Action-Conditioned ViT Predictor (F_wm)",
+        "6-Layer Action-Conditioned ViTPredictor",
+        "12-Layer Deep Transformer Predictor",
+        "Non-autoregressive MLP Block",
+        "Recurrent SSM (RSSM)"
+    ],
+    "Planning Decoder": [
+        "Attentive Pooling + MLP Head",
+        "Dreamer Predictor + CEM Latent MPC",
+        "CEM / MPPI Latent MPC (L1 = 0.70)",
+        "Dreamer Subgoal + CEM Latent MPC",
+        "MLP Head",
+        "Pixel Reconstruction + Policy Head"
+    ],
+    "Primary Use-Case": [
+        "One-Shot Trajectory Imitation",
+        "Cross-Embodiment Goal Imitation",
+        "DROID Benchmark Object-Centric Planning",
+        "Deep Long-Horizon Subgoal Tracking",
+        "Real-time High-frequency Control",
+        "Model-based Reinforcement Learning"
+    ],
+    "Inference Latency (ms)": [14.5, 19.8, 11.2, 16.4, 4.2, 32.5]
 }
 
 df_all = pd.DataFrame(model_data)
@@ -30,7 +67,7 @@ else:
     df_filtered = df_all
 
 st.markdown("### 📊 Architecture Feature Comparison")
-st.dataframe(df_filtered.set_index("Model Name"))
+st.dataframe(df_filtered.set_index("Model Name"), use_container_width=True)
 
 st.markdown("### ⚡ Inference Latency Comparison")
 st.write("A critical factor in deploying world models for physical robotics is control loop latency. Compare the typical forward-pass times:")
@@ -60,26 +97,36 @@ for idx, model in enumerate(selected_compare_models):
             - **How it works:** Encodes the expert video into a sequence of spatiotemporal feature maps, then predicts the agent's future states in feature-coordinate space.
             - **Key Advantage:** Differentiable spatial softmax allows mapping to precise 3D coords without decoding images.
             """)
-        elif model == "FastWAM":
-            st.markdown("""
-            - **How it works:** A high-speed variation that replaces the heavy autoregressive transformer rollout with a feedforward network block.
-            - **Key Advantage:** Reduces latency below 5ms, allowing direct integration inside 250Hz real-time robot controllers.
-            """)
         elif model == "Demo-JEPA":
             st.markdown("""
-            - **How it works:** Uses Meta's V-JEPA 2.1 ViT-Giant encoder to extract 256 spatio-temporal tokens ($256 \\times 1408$). The Dreamer Predictor cross-attends demonstration frames to synthesize latent subgoals, and a CEM planner optimizes continuous 7-DoF robot actions in latent feature space.
-            - **Key Advantage:** Operates entirely in abstract embedding space without pixel reconstruction artifacts, achieving natural cross-embodiment generalization (Franka $\\leftrightarrow$ Sawyer $\\leftrightarrow$ Fairino).
+            - **How it works:** Uses V-JEPA 2.1 ViT-Giant to extract 256 spatio-temporal tokens ($256 \\times 1408$). The Dreamer Predictor cross-attends demonstration frames to synthesize latent subgoals, and a CEM planner optimizes continuous 7-DoF robot actions in latent feature space.
+            - **Key Advantage:** Operates entirely in abstract embedding space without pixel reconstruction artifacts, achieving natural cross-embodiment generalization.
+            """)
+        elif model == "DINO-WM":
+            st.markdown("""
+            - **How it works:** Meta FAIR's model combining frozen DINOv2 ViT-S/14 visual patch tokens ($224 \\times 224$) with a 6-layer action-conditioned ViTPredictor.
+            - **Key Advantage:** High spatial resolution for object-centric manipulation and fast CEM/MPPI trajectory optimization.
+            """)
+        elif model == "JEPA-WM":
+            st.markdown("""
+            - **How it works:** Combines DINOv3 ViT-L/16 patch tokens ($256 \\times 256$) with a deep 12-layer action-conditioned predictor and Dreamer cross-attention subgoal synthesis.
+            - **Key Advantage:** Deep transformer layers enable stable, long-horizon multi-step sub-goal rollouts.
+            """)
+        elif model == "FastWAM":
+            st.markdown("""
+            - **How it works:** Replaces the heavy autoregressive transformer rollout with a feedforward network block.
+            - **Key Advantage:** Reduces latency below 5ms for direct 250Hz real-time robot control.
             """)
         elif model == "Dreamer (RSSM)":
             st.markdown("""
-            - **How it works:** Learns a Recurrent State Space Model (RSSM) containing both deterministic (GRU) and stochastic (sampled Gaussian) components.
-            - **Key Advantage:** Reconstructs actual RGB frames to predict the environment reward signals, enabling model-based reinforcement learning inside imagination.
+            - **How it works:** Learns a Recurrent State Space Model (RSSM) containing both deterministic (GRU) and stochastic components.
+            - **Key Advantage:** Reconstructs RGB frames to predict reward signals for model-based RL.
             """)
 
 st.write("---")
 
-st.markdown("### ⚖️ Real-World Benchmarking: VILMA vs. OSVI-WM")
-st.write("This table presents objective comparative metrics between **VILMA** (our tracking framework) and the **OSVI-WM** world model:")
+st.markdown("### ⚖️ Real-World Benchmarking: VILMA vs. OSVI-WM vs. JEPA World Models")
+st.write("This table presents objective comparative metrics across tracking frameworks and visual world models:")
 
 comparison_payload = {
     "Metric Description": [
@@ -98,34 +145,30 @@ comparison_payload = {
         "30 tracking points",
         "~1.2 ms (CPU OpenCV + MediaPipe)",
         "Mandatory (ZED Stereo Camera)",
-        "[0.35, 0.70] m",
-        "[-0.20, 0.20] m",
-        "[0.00, 0.50] m"
+        "[-0.5, 0.5]",
+        "[-0.5, 0.5]",
+        "[0.1, 1.2]"
     ],
-    "OSVI-WM (Predictive Latent World Model)": [
+    "OSVI-WM (Spatial World Model)": [
         "Monocular RGB Video",
-        "15 frames (linear downsampling)",
-        "15 waypoints (5 main execution stages)",
-        "~14.5 ms (GPU PyTorch Forward Pass)",
-        "Optional (resolves depth via latent regression)",
-        "[0.40, 0.68] m",
-        "[-0.18, 0.18] m",
-        "[0.02, 0.48] m"
+        "10 context + 5 rollout steps",
+        "15 continuous 3D waypoints",
+        "~14.5 ms (PyTorch GPU)",
+        "Optional (Monocular Depth Prediction)",
+        "[-0.4, 0.4]",
+        "[-0.4, 0.4]",
+        "[0.0, 0.8]"
     ],
-    "Demo-JEPA (Joint-Space Policy)": [
-        "Multi-View RGB Video (Front + Wrist)",
-        "Continuous (Denoised horizon)",
-        "5 joint actions (qpos sequences)",
-        "~22.4 ms (GPU ViT-Giant + Diffusion Denoising)",
-        "None (Fully latent representations)",
-        "N/A (Direct Joint 1 Radian)",
-        "N/A (Direct Joint 2 Radian)",
-        "N/A (Direct Joint 3 Radian)"
+    "JEPA-WM / DINO-WM (Latent World Models)": [
+        "Monocular RGB / Video",
+        "6-12 depth rollout steps",
+        "Continuous 7-DoF Deltas (dx,dy,dz,drx,dry,drz,gripper)",
+        "~11.2 - 16.4 ms (PyTorch GPU)",
+        "None (Abstract Latent MPC)",
+        "[-0.4, 0.4]",
+        "[-0.4, 0.4]",
+        "[0.0, 0.8]"
     ]
 }
 
 st.dataframe(pd.DataFrame(comparison_payload).set_index("Metric Description"), use_container_width=True)
-
-st.info("💡 **Methodology Note:** "
-        "VILMA provides high-speed reactive coordinate tracking from stereo depth cameras but requires active physical observation. "
-        "OSVI-WM operates on a single flat monocular camera video to infer latent subgoals and predict trajectories under a learned forward world model dynamics.")
