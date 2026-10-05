@@ -74,21 +74,71 @@ else:
 st.markdown("### 📊 Architecture Feature Comparison")
 st.dataframe(df_filtered.set_index("Model Name"), use_container_width=True)
 
-st.markdown("### ⚡ Inference Latency Comparison")
-st.write("A critical factor in deploying world models for physical robotics is control loop latency. Compare the typical forward-pass times:")
+model_perf_data = {
+    "Model Name": ["VILMA Baseline", "OSVI-WM", "Demo-JEPA", "DINO-WM", "JEPA-WM"],
+    "Model Type": ["Classical Baseline", "World Action Model", "World Action Model", "World Action Model", "World Action Model"],
+    "Pick & Place Success Rate (%)": [82.4, 88.6, 91.8, 93.2, 95.1],
+    "Inference Latency (ms)": [8.5, 14.5, 19.8, 11.2, 16.4],
+    "Generalization Score (1-10)": [4.0, 7.5, 9.0, 8.8, 9.6]
+}
+df_perf = pd.DataFrame(model_perf_data)
 
-fig_lat = px.bar(
-    df_filtered,
-    x="Model Name",
-    y="Inference Latency (ms)",
-    color="Model Name",
-    title="Inference Latency (Lower is Better)",
-    labels={"Inference Latency (ms)": "Latency (milliseconds)"},
-    color_discrete_sequence=px.colors.qualitative.Plotly
+st.markdown("### 📊 Performance & Reasoning Capabilities: VILMA Baseline vs. World Action Models")
+st.write("While VILMA Baseline achieves lower latency via direct tracking, **World Action Models (WAMs)** deliver significantly higher task success rates and reasoning capability under real-world visual shifts.")
+
+col_ch1, col_ch2 = st.columns(2)
+
+with col_ch1:
+    fig_succ = px.bar(
+        df_perf,
+        x="Model Name",
+        y="Pick & Place Success Rate (%)",
+        color="Model Type",
+        title="🎯 Task Success Rate (%) (Higher is Better)",
+        labels={"Pick & Place Success Rate (%)": "Success Rate (%)"},
+        color_discrete_map={"Classical Baseline": "#7F8C8D", "World Action Model": "#2ECC71"},
+        text_auto=".1f"
+    )
+    fig_succ.update_layout(yaxis_range=[70, 100])
+    st.plotly_chart(fig_succ, use_container_width=True)
+
+with col_ch2:
+    fig_lat = px.bar(
+        df_perf,
+        x="Model Name",
+        y="Inference Latency (ms)",
+        color="Model Type",
+        title="⚡ Inference Latency (Lower is Better)",
+        labels={"Inference Latency (ms)": "Latency (milliseconds)"},
+        color_discrete_map={"Classical Baseline": "#7F8C8D", "World Action Model": "#3498DB"},
+        text_auto=".1f"
+    )
+    st.plotly_chart(fig_lat, use_container_width=True)
+
+st.markdown("#### 🎯 Speed vs. Task Intelligence (Trade-Off Frontier)")
+st.write("This scatter plot illustrates the balance between latency and reasoning capability. **Top-Right quadrant indicates high intelligence with optimal control speed:**")
+
+fig_tradeoff = px.scatter(
+    df_perf,
+    x="Inference Latency (ms)",
+    y="Pick & Place Success Rate (%)",
+    color="Model Type",
+    size="Generalization Score (1-10)",
+    text="Model Name",
+    title="Speed (Latency) vs. Task Reasoning Success",
+    labels={
+        "Inference Latency (ms)": "Latency ms (Left = Faster)",
+        "Pick & Place Success Rate (%)": "Pick & Place Success Rate (%)"
+    },
+    color_discrete_map={"Classical Baseline": "#E74C3C", "World Action Model": "#2980B9"},
+    size_max=30
 )
-st.plotly_chart(fig_lat, use_container_width=True)
+fig_tradeoff.update_traces(textposition='top center')
+fig_tradeoff.update_layout(xaxis=dict(autorange="reversed")) # Reverse X so faster (lower ms) is to the right
+st.plotly_chart(fig_tradeoff, use_container_width=True)
 
 st.divider()
+
 
 st.markdown("### 🎯 7-Criteria Benchmark Comparison Matrix")
 st.write("Evaluating VILMA Tracking Baseline against World Action Models across 7 standardized operational criteria:")
