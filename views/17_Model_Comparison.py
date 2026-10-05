@@ -163,9 +163,10 @@ for idx, model in enumerate(selected_compare_models):
         st.markdown(f"#### 🌟 {model}")
         if model == "VILMA Baseline":
             st.markdown("""
-            - **How it works:** Employs YOLOv8x for target object detection, MediaPipe 21-hand landmark extraction for 3D wrist tracking, and Gaussian Mixture Model (GMM) velocity analysis for automated grasp/release frame segmentation.
-            - **Key Advantage:** Fast, explicit 3D point cloud coordinates directly usable for classical kinematic control without requiring heavy neural world model rollout prediction.
+            - **How it works:** Employs YOLOv8x for target object detection, MediaPipe 21-hand landmark extraction for 3D wrist tracking, GMM velocity analysis for grasp/release segmentation, and Dynamic Movement Primitives (DMP) for smooth trajectory parameterization.
+            - **Key Advantage:** Fast, explicit 3D point cloud coordinates parameterized via DMP spring-damper equations, directly usable for classical kinematic control without requiring heavy neural world model rollout prediction.
             """)
+
         elif model == "OSVI-WM":
             st.markdown("""
             - **How it works:** Encodes the expert video into a sequence of spatiotemporal feature maps, then predicts the agent's future states in feature-coordinate space.

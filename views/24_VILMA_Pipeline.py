@@ -107,3 +107,18 @@ if "captured_tensors" in st.session_state and st.session_state["captured_tensors
             margin=dict(l=0, r=0, b=0, t=40)
         )
         st.plotly_chart(fig, use_container_width=True)
+
+        st.divider()
+        
+        st.markdown("### 🌀 Dynamic Movement Primitives (DMP) Trajectory Parameterization")
+        st.markdown("""
+        In VILMA, raw hand tracking coordinates from MediaPipe/YOLO are parameterized using **Dynamic Movement Primitives (DMP)**.
+        - **What is DMP?** DMP is a non-linear dynamical system formulation based on spring-damper differential equations:
+          $$\\tau^2 \\ddot{y} = \\alpha_z (\\beta_z (g - y) - \\tau \\dot{y}) + f(x)$$
+        - **Spatial Goal Scaling ($g$):** Allows scaling the pick-and-place trajectory to new spatial goal targets without requiring a new demo.
+        - **Temporal Scaling ($\\tau$):** Smoothly speeds up or slows down physical robot arm execution.
+        - **Smoothness & Safety:** Guarantees convergence to target goal $g$ with smooth velocity/acceleration curves.
+        """)
+        
+        st.info("💡 **Summary:** VILMA uses **YOLOv8 + MediaPipe** for vision, **GMM** for grasp/release event segmentation, and **DMP** for smooth, adaptable kinematic robot control.")
+
