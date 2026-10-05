@@ -77,7 +77,7 @@ st.markdown("""
 # Sidebar Model Switcher
 # -------------------------------------------------------------
 st.sidebar.markdown("## 🔮 World Model Hub")
-backend_options = ["OSVI-WM", "Demo-JEPA", "DINO-WM", "JEPA-WM"]
+backend_options = ["OSVI-WM", "Demo-JEPA", "DINO-WM", "JEPA-WM", "VILMA Baseline"]
 current_idx = backend_options.index(manager.active_backend_name) if manager.active_backend_name in backend_options else 0
 selected_backend = st.sidebar.radio(
     "Active World Model:",
@@ -154,6 +154,15 @@ elif manager.active_backend_name == "JEPA-WM":
             st.Page("views/23_JEPA_WM_Pipeline.py", title="JEPA-WM 12-Layer Pipeline", icon="🧠"),
             st.Page("views/02_Architecture_Explorer.py", title="Architecture Explorer", icon="🏗️"),
             st.Page("views/10_Attention_Explorer.py", title="Subgoal Cross-Attention", icon="🔥"),
+        ],
+        "🛠️ Tools & Comparison": common_tools
+    }
+elif manager.active_backend_name == "VILMA Baseline":
+    pages = {
+        "Overview": [home_page],
+        "📊 VILMA Baseline Pipeline": [
+            st.Page("views/24_VILMA_Pipeline.py", title="VILMA Tracking Pipeline", icon="📊"),
+            st.Page("views/02_Architecture_Explorer.py", title="Architecture Explorer", icon="🏗️"),
         ],
         "🛠️ Tools & Comparison": common_tools
     }

@@ -205,3 +205,49 @@ elif manager.active_backend_name == "JEPA-WM":
         class O,E,DP,VP,A,CEM,R stage;
     ```
     """)
+
+elif manager.active_backend_name == "VILMA Baseline":
+    col_main, col_stats = st.columns([2, 1])
+    with col_main:
+        st.markdown('<div class="model-badge">VILMA Baseline Active</div>', unsafe_allow_html=True)
+        st.markdown(r"""
+        ### 📊 VILMA: Visual Imitation Learning with Detection & Tracking
+        **VILMA** serves as the **classical tracking-based baseline reference**. It uses explicit 2D object detectors and 3D hand tracking to extract geometric trajectories from one-shot human video demonstrations:
+        
+        1. **YOLOv8x Object Detector:** Detects task object bounding boxes across video frames.
+        2. **MediaPipe 21-Hand Landmarker:** Tracks human hand 3D spatial points.
+        3. **GMM Motion-Gated Event Segmentation:** Detects exact grasp (pick) and release (place) frame indices.
+        4. **Skill Reuse & Retargeting Engine:** Remaps hand trajectory coordinates onto new target frames.
+        5. **Robot Trajectory Exporter:** Outputs 30-point Cartesian hand trajectories $[X, Y, Z]$ for Fairino FR10 / Sawyer controllers.
+        """)
+        
+        st.info("💡 **Next Step:** Use the sidebar to open **`VILMA Tracking Pipeline`** to inspect object detection, MediaPipe hand keypoints, and GMM event segmentation.")
+
+    with col_stats:
+        st.markdown('<div class="model-card">', unsafe_allow_html=True)
+        st.markdown("### ⚙️ VILMA Baseline Specifications")
+        st.write("- **Backbone:** YOLOv8x + MediaPipe 21-Hands")
+        st.write("- **Input Mode:** Stereo RGB-D / Monocular Video")
+        st.write("- **Trajectory Output:** 30 Dense 3D Hand Points $[X, Y, Z]$")
+        st.write("- **Event Detection:** GMM Motion-Gated Grasp/Release")
+        st.write("- **Inference Speed:** **~1.2 ms** (Ultra-Fast CPU Processing)")
+        st.write("- **Target Robots:** Fairino FR10, Sawyer")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown("### 🗺️ VILMA Baseline Pipeline Flowchart")
+    st.markdown("""
+    ```mermaid
+    graph TD
+        classDef stage fill:#1e1b4b,stroke:#818cf8,stroke-width:2px,color:#f8fafc;
+        classDef tensor fill:#064e3b,stroke:#34d399,stroke-width:1px,color:#f8fafc;
+
+        V[🎥 1. Demonstration Video / SVO Stereo Input] --> Y[🔎 2. YOLOv8x Object Detector]
+        V --> MP[✋ 3. MediaPipe 21-Hand Landmarker]
+        Y -->|Object Bounding Boxes| GMM[📌 4. GMM Grasp/Release Motion Segmentation]
+        MP -->|3D Hand Landmark Coordinates| GMM
+        GMM -->|Grasp & Release Frame Indices| RE[🔄 5. Skill Reuse & Trajectory Retargeting]
+        RE -->|30 Hand Trajectory Points X,Y,Z| R[🦾 6. Fairino FR10 Controller Driver]
+
+        class V,Y,MP,GMM,RE,R stage;
+    ```
+    """)

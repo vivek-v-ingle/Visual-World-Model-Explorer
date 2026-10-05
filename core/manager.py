@@ -57,11 +57,13 @@ def get_manager() -> VisualExplorerManager:
         from backends.jepa.jepa_backend import DemoJEPABackend
         from backends.dino_wm.dino_wm_backend import DINOWMBackend
         from backends.jepa_wm.jepa_wm_backend import JEPAWMBackend
+        from backends.vilma.vilma_backend import VILMABackend
 
         manager.register_backend("FastWAM (Mock)", MockFastWAMBackend())
         manager.register_backend("Demo-JEPA", DemoJEPABackend())
         manager.register_backend("DINO-WM", DINOWMBackend())
         manager.register_backend("JEPA-WM", JEPAWMBackend())
+        manager.register_backend("VILMA Baseline", VILMABackend())
         
         st.session_state["manager"] = manager
         
